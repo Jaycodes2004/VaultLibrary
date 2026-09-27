@@ -1,26 +1,356 @@
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Caveat:wght@400..700&family=Cinzel:wght@400..800&family=Cormorant+Garamond:ital,wght@0,400..700;1,400..700&family=Marck+Script&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@layer base {
+  /* Font classes */
+  .font-calligraphy {
+    font-family: 'Marck Script', 'Alex Brush', cursive !important;
+  }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  .font-serif-classic {
+    font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif !important;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  .font-cinzel-regal {
+    font-family: 'Cinzel', serif !important;
+  }
+
+  .font-handwritten {
+    font-family: 'Caveat', cursive !important;
+  }
+
+  .font-clean-sans {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ========================================================
+   LIGHT MODE THEMES (3 Options - Default: Vintage Slate & Dark Grey)
+   ======================================================== */
+
+/* 1. Vintage Slate & Dark Grey (DEFAULT LIGHT) */
+.theme-light-vintage-slate {
+  background-color: #f2eee5;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(245, 241, 233, 0.7) 0%, rgba(226, 220, 209, 0.8) 100%),
+    url('/paper-texture.jpeg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  color: #1e2329;
+}
+.theme-light-vintage-slate .parchment-card {
+  background: rgba(250, 247, 240, 0.92);
+  border: 1px solid rgba(50, 60, 75, 0.22);
+  box-shadow: 0 4px 20px -2px rgba(35, 45, 60, 0.08), inset 0 0 15px rgba(220, 215, 205, 0.35);
+  color: #1a2027;
+}
+.theme-light-vintage-slate .parchment-input {
+  background: rgba(255, 253, 248, 0.95);
+  border: 1px solid rgba(50, 60, 75, 0.28);
+  color: #1e2329;
+}
+.theme-light-vintage-slate .parchment-input:focus {
+  border-color: #3b4554;
+  box-shadow: 0 0 0 2px rgba(59, 69, 84, 0.2);
+}
+.theme-light-vintage-slate .theme-accent-btn {
+  background-color: #2b333e;
+  color: #ffffff;
+}
+.theme-light-vintage-slate .theme-accent-btn:hover {
+  background-color: #1d232b;
+}
+
+/* 2. Antique Handcrafted Parchment (Warm Ochre) */
+.theme-light-antique-parchment {
+  background-color: #f6f1e6;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(255, 252, 245, 0.5) 0%, rgba(235, 224, 205, 0.6) 100%),
+    url('/paper-texture.jpeg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  color: #2b1f17;
+}
+.theme-light-antique-parchment .parchment-card {
+  background: rgba(255, 253, 249, 0.9);
+  border: 1px solid rgba(160, 126, 92, 0.24);
+  box-shadow: 0 4px 20px -2px rgba(90, 60, 30, 0.08);
+  color: #2b1f17;
+}
+.theme-light-antique-parchment .parchment-input {
+  background: rgba(255, 254, 250, 0.95);
+  border: 1px solid rgba(160, 126, 92, 0.3);
+  color: #2b1f17;
+}
+.theme-light-antique-parchment .theme-accent-btn {
+  background-color: #8c6742;
+  color: #ffffff;
+}
+.theme-light-antique-parchment .theme-accent-btn:hover {
+  background-color: #725232;
+}
+
+/* 3. Clean Monastic Ivory */
+.theme-light-monastic-ivory {
+  background-color: #fbf9f5;
+  background-image: radial-gradient(circle at 50% 50%, #ffffff 0%, #f3eee6 100%);
+  color: #2e2620;
+}
+.theme-light-monastic-ivory .parchment-card {
+  background: #ffffff;
+  border: 1px solid rgba(120, 100, 80, 0.18);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+  color: #2e2620;
+}
+.theme-light-monastic-ivory .parchment-input {
+  background: #fdfcfb;
+  border: 1px solid rgba(120, 100, 80, 0.22);
+  color: #2e2620;
+}
+.theme-light-monastic-ivory .theme-accent-btn {
+  background-color: #7d3c34;
+  color: #ffffff;
+}
+.theme-light-monastic-ivory .theme-accent-btn:hover {
+  background-color: #632e27;
+}
+
+/* ========================================================
+   DARK MODE THEMES (3 Options - Default: Archival Obsidian)
+   ======================================================== */
+
+/* 1. Archival Obsidian & Warm Bronze (DEFAULT DARK) */
+.theme-dark-archival-obsidian {
+  background-color: #12100e;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(28, 24, 20, 0.9) 0%, rgba(12, 10, 8, 0.98) 100%),
+    url('/paper-texture.jpeg');
+  background-blend-mode: overlay;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  color: #ede5da;
+}
+.theme-dark-archival-obsidian .parchment-card {
+  background: rgba(26, 22, 18, 0.88);
+  border: 1px solid rgba(190, 150, 100, 0.22);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
+  color: #ede5da;
+}
+.theme-dark-archival-obsidian .parchment-input {
+  background: rgba(18, 15, 12, 0.9);
+  border: 1px solid rgba(190, 150, 100, 0.3);
+  color: #ede5da;
+}
+.theme-dark-archival-obsidian .theme-accent-btn {
+  background-color: #9e753b;
+  color: #ffffff;
+}
+.theme-dark-archival-obsidian .theme-accent-btn:hover {
+  background-color: #85612e;
+}
+
+/* 2. Midnight Scholar Ink */
+.theme-dark-midnight-scholar {
+  background-color: #0b101d;
+  background-image: radial-gradient(circle at 50% 50%, #111a30 0%, #060912 100%);
+  color: #e6edfa;
+}
+.theme-dark-midnight-scholar .parchment-card {
+  background: rgba(16, 24, 43, 0.85);
+  border: 1px solid rgba(90, 130, 200, 0.24);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+  color: #e6edfa;
+}
+.theme-dark-midnight-scholar .parchment-input {
+  background: rgba(10, 16, 30, 0.9);
+  border: 1px solid rgba(90, 130, 200, 0.3);
+  color: #e6edfa;
+}
+.theme-dark-midnight-scholar .theme-accent-btn {
+  background-color: #3b66cf;
+  color: #ffffff;
+}
+.theme-dark-midnight-scholar .theme-accent-btn:hover {
+  background-color: #2b50aa;
+}
+
+/* 3. Forest Hermetic Leather */
+.theme-dark-forest-leather {
+  background-color: #0b1410;
+  background-image: radial-gradient(circle at 50% 50%, #112019 0%, #060c09 100%);
+  color: #e4ebe6;
+}
+.theme-dark-forest-leather .parchment-card {
+  background: rgba(16, 28, 22, 0.85);
+  border: 1px solid rgba(80, 160, 120, 0.22);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+  color: #e4ebe6;
+}
+.theme-dark-forest-leather .parchment-input {
+  background: rgba(10, 18, 14, 0.9);
+  border: 1px solid rgba(80, 160, 120, 0.28);
+  color: #e4ebe6;
+}
+.theme-dark-forest-leather .theme-accent-btn {
+  background-color: #2d7a55;
+  color: #ffffff;
+}
+.theme-dark-forest-leather .theme-accent-btn:hover {
+  background-color: #226143;
+}
+
+/* Hover transitions for parchment cards */
+.parchment-card {
+  transition: all 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.parchment-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Calligraphy Writing & Drawing Animation */
+@keyframes penTrace {
+  0% {
+    transform: translate(-90px, 0px) rotate(-15deg);
+    opacity: 0.3;
+  }
+  15% {
+    transform: translate(-70px, -4px) rotate(-8deg);
+    opacity: 1;
+  }
+  35% {
+    transform: translate(-20px, 4px) rotate(-12deg);
+  }
+  60% {
+    transform: translate(25px, -3px) rotate(-7deg);
+  }
+  85% {
+    transform: translate(80px, 2px) rotate(-14deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(95px, 0px) rotate(-15deg);
+    opacity: 0.3;
+  }
+}
+
+.pen-nib-anim {
+  animation: penTrace 3.2s ease-in-out infinite alternate;
+}
+
+@keyframes flourishDraw {
+  0% {
+    stroke-dashoffset: 400;
+    opacity: 0.2;
+  }
+  50% {
+    stroke-dashoffset: 0;
+    opacity: 0.9;
+  }
+  100% {
+    stroke-dashoffset: 400;
+    opacity: 0.4;
+  }
+}
+
+.flourish-path {
+  stroke-dasharray: 400;
+  animation: flourishDraw 3.2s ease-in-out infinite;
+}
+
+@keyframes textInscribe {
+  0%, 100% {
+    opacity: 0.6;
+    letter-spacing: 1px;
+  }
+  50% {
+    opacity: 1;
+    letter-spacing: 2.5px;
+  }
+}
+
+.calligraphy-drawing-text {
+  animation: textInscribe 3.2s ease-in-out infinite;
+}
+
+/* Reader Themes */
+.theme-dark {
+  background-color: #141210;
+  color: #ede5da;
+}
+
+.theme-sepia {
+  background-color: #f7f2e6;
+  background-image: url('/paper-texture.jpeg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  color: #38281d;
+}
+
+.theme-sepia .reader-paragraph {
+  color: #38281d;
+}
+
+.theme-light {
+  background-color: #fcfbf8;
+  color: #241c16;
+}
+
+.theme-light .reader-paragraph {
+  color: #2b221a;
+}
+
+/* Highlights */
+.hl-amber {
+  background-color: rgba(220, 165, 40, 0.32);
+  border-bottom: 2px solid #b38738;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+.hl-emerald {
+  background-color: rgba(50, 150, 100, 0.28);
+  border-bottom: 2px solid #2d7a55;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+.hl-rose {
+  background-color: rgba(180, 50, 60, 0.25);
+  border-bottom: 2px solid #9e2a2b;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+.hl-sky {
+  background-color: rgba(40, 120, 190, 0.25);
+  border-bottom: 2px solid #2b6cb0;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(180, 145, 110, 0.12);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(150, 115, 80, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 115, 80, 0.5);
 }

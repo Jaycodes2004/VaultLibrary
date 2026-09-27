@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  admin-mail-service:
+    build: .
+    container_name: readvault-admin-mailer
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+    env_file:
+      - .env
+    environment:
+      - SMTP_SENDER=${SMTP_SENDER:-admin-sender@vaultlibrary.internal}
+      - ADMIN_RECEIVER=${ADMIN_RECEIVER:-admin-receiver@vaultlibrary.internal}
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+    volumes:
+      - ./mail_dispatches.log:/app/mail_dispatches.log
