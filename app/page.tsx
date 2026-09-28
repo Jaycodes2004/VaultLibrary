@@ -13,8 +13,9 @@ import { PdfReaderModal } from '../components/PdfReaderModal';
 import { INITIAL_BOOKS, INITIAL_USER, INITIAL_USERS_LIST, INITIAL_BOOK_REQUESTS } from '../lib/mock-data';
 import { Book, UserProfile, BookRequest, LightThemeId, DarkThemeId } from '../lib/types';
 import { getSessionCookie, updateLastReadPosition, clearSessionCookie, setSessionCookie } from '../lib/storage';
-import { BookOpen, Shield, Sparkles, Smartphone, Layers, Lock, Feather, Send, Mail } from 'lucide-react';
+import { BookOpen, Shield, Sparkles, Smartphone, Layers, Lock, Feather, Send, Mail, Key } from 'lucide-react';
 import Link from 'next/link';
+import { LibraryGateway } from '../components/LibraryGateway';
 
 export default function HomePage() {
   const [user, setUser] = useState<UserProfile>(INITIAL_USER);
@@ -42,6 +43,10 @@ export default function HomePage() {
   const [selectedFontId, setSelectedFontId] = useState<string>('calligraphy');
   const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true);
 
+  // Request-Only Library Gateway Authorization State
+  const [isScholarLoggedIn, setIsScholarLoggedIn] = useState<boolean>(false);
+  const [isPreviewMode, setIsPreviewMode] = useState<boolean>(false);
+
   // Initial loading simulation with Calligraphy writing animation
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -68,7 +73,8 @@ export default function HomePage() {
   // Restore session from cookie & localStorage preferences on mount
   useEffect(() => {
     const session = getSessionCookie();
-    if (session) {
+    if (session && session.userId && session.role === 'scholar') {
+      setIsScholarLoggedIn(true);
       setUser((prev) => ({
         ...prev,
         userId: session.userId || prev.userId,
@@ -79,6 +85,8 @@ export default function HomePage() {
         lastReadLocation: session.lastLocation || prev.lastReadLocation,
         lastReadProgress: session.progressPercentage ?? prev.lastReadProgress,
       }));
+    } else {
+      setIsScholarLoggedIn(false);
     }
 
     // Load saved preferences
@@ -142,16 +150,28 @@ export default function HomePage() {
     localStorage.setItem('user_theme_dark', theme);
   };
 
+  // Gateway login handler
+  const handleGatewayLoginSuccess = (newUser: UserProfile) => {
+    setUser(newUser);
+    setIsScholarLoggedIn(true);
+    setIsPreviewMode(false);
+    showToast(`Welcome back, ${newUser.name}. Archive unlocked.`);
+  };
+
   // Switch user handler
   const handleSwitchUser = (newUser: UserProfile) => {
     setUser(newUser);
+    setIsScholarLoggedIn(true);
+    setIsPreviewMode(false);
     showToast(`Switched active profile to ${newUser.name}`);
   };
 
-  // Logout handler
+  // Logout handler (locks the archive)
   const handleLogout = () => {
     clearSessionCookie();
-    showToast('Signed out of session. Switched to guest scholar profile.');
+    setIsScholarLoggedIn(false);
+    setIsPreviewMode(false);
+    showToast('Signed out. Archive locked to Gateway.');
     setUser({
       userId: `usr_guest_${Math.floor(Math.random() * 8999 + 1000)}`,
       name: 'Guest Scholar',
@@ -163,6 +183,11 @@ export default function HomePage() {
 
   // Open book handler
   const handleOpenBook = (book: Book, resume: boolean, format: 'epub' | 'pdf' = 'epub') => {
+    if (!isScholarLoggedIn) {
+      showToast('Volume reading is restricted to approved scholars. Please sign in or request access.');
+      setIsPreviewMode(false);
+      return;
+    }
     if (resume) {
       const accessed = user.booksAccessed.find((b) => b.bookId === book.id);
       const loc = accessed?.locationCfi || user.lastReadLocation || 'ch-01:p-0';
@@ -275,8 +300,64 @@ export default function HomePage() {
           <div className="py-24">
             <CalligraphyLoader label="Loading" subtext="Inscribing parchment and reading cache..." />
           </div>
+        ) : !isScholarLoggedIn && !isPreviewMode ? (
+          /* DEFAULT VIEW: Request-Only Library Gateway */
+          <LibraryGateway
+            onLoginSuccess={handleGatewayLoginSuccess}
+            totalBooksCount={books.length}
+            onPreviewCatalog={() => setIsPreviewMode(true)}
+            activeFontClass={activeFontClass}
+          />
         ) : (
+          /* UNLOCKED CATALOG VIEW (For Authorized Scholars or Preview Mode) */
           <>
+            {/* Status Header Banner */}
+            {!isScholarLoggedIn && isPreviewMode ? (
+              <div className="mb-8 p-4 rounded-2xl parchment-card border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm animate-in fade-in">
+                <div className="flex items-center gap-3 text-xs">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-stone-900 dark:text-white">Catalog Preview Mode:</span>{' '}
+                    <span className="text-stone-600 dark:text-stone-300 font-serif">
+                      You are viewing archive metadata. Reading full volumes requires an authorized scholar account.
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsPreviewMode(false)}
+                  className="px-4 py-2 rounded-xl bg-[#8c6742] hover:bg-[#725232] text-white text-xs font-semibold shadow transition-all cursor-pointer flex-shrink-0"
+                >
+                  Return to Access Gateway / Sign In
+                </button>
+              </div>
+            ) : (
+              <div className="mb-8 p-4 rounded-2xl parchment-card border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm animate-in fade-in">
+                <div className="flex items-center gap-3 text-xs">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-stone-900 dark:text-white">Active Authorized Scholar Session:</span>{' '}
+                    <span className="text-[#8c6742] dark:text-[#d4af37] font-semibold">{user.name}</span>{' '}
+                    <span className="text-stone-500">({user.email})</span> &bull;{' '}
+                    <span className="uppercase text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      Tier: {user.accessTier}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleLogout}
+                  className="px-3.5 py-1.5 rounded-xl parchment-input hover:border-rose-500/50 hover:text-rose-600 text-xs font-semibold transition-all cursor-pointer flex-shrink-0"
+                >
+                  Lock Archive & Sign Out
+                </button>
+              </div>
+            )}
+
             {/* View 1: My Library Dashboard */}
             {activeTab === 'library' && (
               <LibraryGrid
@@ -289,7 +370,7 @@ export default function HomePage() {
               />
             )}
 
-            {/* View 2: Dedicated Find Books Tab (150 Volumes) */}
+            {/* View 2: Dedicated Find Books Tab */}
             {activeTab === 'finder' && (
               <BookFinder
                 books={books}

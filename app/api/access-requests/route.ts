@@ -5,6 +5,7 @@ import {
   updateDbLibraryAccessRequestStatus,
   DEFAULT_ADMIN_EMAIL,
 } from '@/lib/db';
+import { dispatchAccessRequestNotification } from '@/lib/mailer';
 
 export async function GET() {
   try {
@@ -41,30 +42,23 @@ export async function POST(request: Request) {
       desiredTier || 'scholar'
     );
 
-    // Dispatch notice to Chief Administrator via Python microservice
-    const mailServiceUrl = process.env.MAIL_SERVICE_URL || 'http://127.0.0.1:8025';
-    try {
-      fetch(`${mailServiceUrl}/notify-access-request`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          full_name: fullName.trim(),
-          email: email.trim().toLowerCase(),
-          organization: organization || 'Independent Scholar',
-          purpose: purpose || 'Academic Research',
-          desired_tier: desiredTier || 'scholar',
-          request_id: newRequest.id,
-        }),
-      }).catch(() => {});
-    } catch (e) {
-      // Background attempt
-    }
-    console.log(`[DISPATCH NOTICE] New Library Access Request from ${fullName} (${email}) forwarded to administrator`);
+    // Dispatch notice to Chief Administrator
+    const dispatchResult = await dispatchAccessRequestNotification({
+      requestId: newRequest.id,
+      fullName: fullName.trim(),
+      email: email.trim().toLowerCase(),
+      organization: organization || 'Independent Scholar',
+      purpose: purpose || 'Academic Research',
+      desiredTier: desiredTier || 'scholar',
+    });
+
+    console.log(`[DISPATCH NOTICE] Library Access Request from ${fullName} processed. Mode: ${dispatchResult.mode}`);
 
     return NextResponse.json({
       success: true,
       request: newRequest,
-      message: `Your library access request has been officially transmitted to Chief Administrator at ${DEFAULT_ADMIN_EMAIL}.`,
+      message: `Your library access request has been officially transmitted to Administration.`,
+      dispatch: dispatchResult,
       adminEmail: DEFAULT_ADMIN_EMAIL,
     });
   } catch (error: any) {

@@ -48,16 +48,14 @@ export async function POST(request: Request) {
         return NextResponse.json({
           success: false,
           pending: true,
-          adminEmail: DEFAULT_ADMIN_EMAIL,
-          error: `Your access request is pending administrative review. The request was forwarded to Chief Administrator at ${DEFAULT_ADMIN_EMAIL}.`,
+          error: `Your access request is currently pending administrative review. You will receive authorization upon approval.`,
         }, { status: 403 });
       }
       if (r.status === 'rejected') {
         return NextResponse.json({
           success: false,
           rejected: true,
-          adminEmail: DEFAULT_ADMIN_EMAIL,
-          error: `Access request for this email was reviewed and declined by the administrator. Contact ${DEFAULT_ADMIN_EMAIL} for appeals.`,
+          error: `Access request for this email was reviewed and declined by the library administration.`,
         }, { status: 403 });
       }
     }
@@ -66,8 +64,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: false,
       notFound: true,
-      adminEmail: DEFAULT_ADMIN_EMAIL,
-      error: `Access credentials not found. ReadVault is a request-only library. Please fill out an Access Request to be reviewed by ${DEFAULT_ADMIN_EMAIL}.`,
+      error: `Access credentials not found. ReadVault is a request-only library. Please submit an Access Request for administrative review.`,
     }, { status: 404 });
   } catch (error: any) {
     console.error('API /api/auth/login error:', error);
