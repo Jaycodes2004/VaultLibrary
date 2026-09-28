@@ -13,7 +13,7 @@ import { PdfReaderModal } from '../components/PdfReaderModal';
 import { INITIAL_BOOKS, INITIAL_USER, INITIAL_USERS_LIST, INITIAL_BOOK_REQUESTS } from '../lib/mock-data';
 import { Book, UserProfile, BookRequest, LightThemeId, DarkThemeId } from '../lib/types';
 import { getSessionCookie, updateLastReadPosition, clearSessionCookie, setSessionCookie } from '../lib/storage';
-import { BookOpen, Shield, Sparkles, Smartphone, Layers, Lock, Feather, Send, Mail, Key } from 'lucide-react';
+import { BookOpen, Shield, Sparkles, Smartphone, Layers, Lock, Feather, Send, Mail, Key, AlertCircle, AlertTriangle, CheckCircle2, X } from 'lucide-react';
 import Link from 'next/link';
 import { LibraryGateway } from '../components/LibraryGateway';
 
@@ -34,7 +34,7 @@ export default function HomePage() {
   const [initialFormat, setInitialFormat] = useState<'epub' | 'pdf'>('epub');
   const [isPdfModalOpen, setIsPdfModalOpen] = useState<boolean>(false);
   const [pdfModalBook, setPdfModalBook] = useState<Book>(INITIAL_BOOKS[0]);
-  const [toastMessage, setToastMessage] = useState<string>('');
+  const [toastConfig, setToastConfig] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
 
   // Appearance & Themes (Default: Light Mode with Vintage Slate & Dark Grey + Calligraphy Font)
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
@@ -55,9 +55,9 @@ export default function HomePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 3000);
+  const showToast = (msg: string, type: 'success' | 'error' | 'warning' = 'success') => {
+    setToastConfig({ message: msg, type });
+    setTimeout(() => setToastConfig(null), 3500);
   };
 
   // Determine active font class
@@ -184,7 +184,7 @@ export default function HomePage() {
   // Open book handler
   const handleOpenBook = (book: Book, resume: boolean, format: 'epub' | 'pdf' = 'epub') => {
     if (!isScholarLoggedIn) {
-      showToast('Volume reading is restricted to approved scholars. Please sign in or request access.');
+      showToast('Volume reading is restricted to approved scholars. Please sign in or request access.', 'warning');
       setIsPreviewMode(false);
       return;
     }
@@ -272,9 +272,44 @@ export default function HomePage() {
       className={`min-h-screen flex flex-col justify-between selection:bg-[#8c6742] selection:text-white transition-colors duration-300 ${activeThemeClass}`}
     >
       {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed top-6 right-6 z-50 p-3.5 rounded-xl bg-[#8c6742] text-white text-xs font-semibold shadow-2xl animate-in fade-in slide-in-from-top-2 border border-[#b38738]">
-          {toastMessage}
+      {toastConfig && (
+        <div
+          role="alert"
+          className={`fixed top-6 right-6 z-50 p-4 rounded-2xl text-xs font-semibold shadow-2xl animate-in fade-in slide-in-from-top-3 flex items-center gap-3 border backdrop-blur-md transition-all max-w-md ${
+            toastConfig.type === 'error'
+              ? 'bg-rose-950/95 text-rose-100 border-rose-500/60 shadow-rose-950/60 ring-1 ring-rose-500/30'
+              : toastConfig.type === 'warning'
+              ? 'bg-amber-950/95 text-amber-100 border-amber-500/60 shadow-amber-950/60 ring-1 ring-amber-500/30'
+              : 'bg-[#8c6742] text-white border-[#b38738] shadow-black/30'
+          }`}
+        >
+          {toastConfig.type === 'error' ? (
+            <div className="w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0">
+              <AlertCircle className="w-4 h-4 text-rose-400" />
+            </div>
+          ) : toastConfig.type === 'warning' ? (
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-4 h-4 text-amber-400" />
+            </div>
+          ) : (
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            </div>
+          )}
+          <div className="flex-1">
+            <div className="font-bold uppercase tracking-wider text-[10px] opacity-75">
+              {toastConfig.type === 'error' ? 'Notice / Error' : toastConfig.type === 'warning' ? 'Access Restricted' : 'Archive Notice'}
+            </div>
+            <div className="leading-snug mt-0.5">{toastConfig.message}</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToastConfig(null)}
+            className="text-white/60 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+            aria-label="Close notification"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 

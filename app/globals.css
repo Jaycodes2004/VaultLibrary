@@ -354,3 +354,11 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(150, 115, 80, 0.5);
 }
+
+/* Suppress Microsoft Edge / IE native password reveal & clear buttons to avoid overlap with custom toggle */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}

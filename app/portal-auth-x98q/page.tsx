@@ -22,6 +22,7 @@ import {
   Send,
   Trash2,
   AlertTriangle,
+  AlertCircle,
   FileText,
   Search,
   Check,
@@ -60,7 +61,7 @@ export default function AdminPortalPage() {
   const [allBooks, setAllBooks] = useState<Book[]>([]);
   const [bookSearchQuery, setBookSearchQuery] = useState('');
   const [storagePath, setStoragePath] = useState('D:\\Desktop\\Archive\\Books');
-  const [statusNotification, setStatusNotification] = useState('');
+  const [toastConfig, setToastConfig] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Add Book Form State
@@ -125,20 +126,31 @@ export default function AdminPortalPage() {
     if (e) e.preventDefault();
     const u = adminUsername.trim().toLowerCase();
     const p = adminPassword.trim();
+
+    if (!u || !p) {
+      const msg = 'Please enter both administrative username and master passkey.';
+      setErrorMsg(msg);
+      showToast(msg, 'warning');
+      return;
+    }
+
     if (
       (u === 'admin' || u === 'adminadmin' || u === 'administrator' || u === 'root' || u === 'adminportal') &&
       (p === 'vault2026' || p === 'demo' || p === 'admin' || p === 'adminadmin' || p === '123456' || p === 'password')
     ) {
       setIsAuthenticated(true);
       setErrorMsg('');
+      showToast('Admin session authorized. Master console unlocked.', 'success');
     } else {
-      setErrorMsg('Invalid administrative credentials. Use admin / vault2026 or click 1-Click Login below.');
+      const msg = 'Invalid administrative credentials. Use admin / vault2026 or click 1-Click Login below.';
+      setErrorMsg(msg);
+      showToast('Authentication Failed: Invalid admin username or passkey.', 'error');
     }
   };
 
-  const showToast = (msg: string) => {
-    setStatusNotification(msg);
-    setTimeout(() => setStatusNotification(''), 3000);
+  const showToast = (msg: string, type: 'success' | 'error' | 'warning' = 'success') => {
+    setToastConfig({ message: msg, type });
+    setTimeout(() => setToastConfig(null), 4000);
   };
 
   const copyUniqueId = (uniqueId: string) => {
@@ -196,13 +208,13 @@ export default function AdminPortalPage() {
               : b
           )
         );
-        showToast(`Maintenance saved for Unique ID [${editUniqueId.trim()}]`);
+        showToast(`Maintenance saved for Unique ID [${editUniqueId.trim()}]`, 'success');
         setEditingBook(null);
       } else {
-        showToast('Error saving maintenance: ' + (data.error || 'Server error'));
+        showToast('Error saving maintenance: ' + (data.error || 'Server error'), 'error');
       }
     } catch (err) {
-      showToast('Failed to save book maintenance.');
+      showToast('Failed to save book maintenance.', 'error');
     }
   };
 
@@ -215,12 +227,12 @@ export default function AdminPortalPage() {
       const data = await res.json();
       if (data.success) {
         setAllBooks((prev) => prev.filter((b) => b.id !== bookId));
-        showToast(`Volume ${uniqueId || bookId} deleted from database.`);
+        showToast(`Volume ${uniqueId || bookId} deleted from database.`, 'success');
       } else {
-        showToast('Failed to delete volume.');
+        showToast('Failed to delete volume.', 'error');
       }
     } catch (err) {
-      showToast('Error deleting book.');
+      showToast('Error deleting book.', 'error');
     }
   };
 
@@ -240,12 +252,12 @@ export default function AdminPortalPage() {
         if (data.userCreated) {
           setUsers((prev) => [data.userCreated, ...prev]);
         }
-        showToast(`Access granted! Approved dispatch notification logged to ${adminEmail}.`);
+        showToast(`Access granted! Approved dispatch notification logged to ${adminEmail}.`, 'success');
       } else {
-        showToast('Error approving access request.');
+        showToast('Error approving access request.', 'error');
       }
     } catch (e) {
-      showToast('Error approving access request.');
+      showToast('Error approving access request.', 'error');
     }
   };
 
@@ -261,10 +273,10 @@ export default function AdminPortalPage() {
         setAccessRequests((prev) =>
           prev.map((r) => (r.id === requestId ? { ...r, status: 'rejected' } : r))
         );
-        showToast(`Access request declined. Recorded for ${adminEmail}.`);
+        showToast(`Access request declined. Recorded for ${adminEmail}.`, 'warning');
       }
     } catch (e) {
-      showToast('Error updating request status.');
+      showToast('Error updating request status.', 'error');
     }
   };
 
@@ -309,10 +321,10 @@ export default function AdminPortalPage() {
       });
       const data = await res.json();
       if (data.success) {
-        showToast(`Book access ${nextVal ? 'GRANTED' : 'RESTRICTED'} for scholars.`);
+        showToast(`Book access ${nextVal ? 'GRANTED' : 'RESTRICTED'} for scholars.`, 'success');
       }
     } catch (e) {
-      showToast('Error syncing with database.');
+      showToast('Error syncing with database.', 'error');
     }
   };
 
@@ -337,17 +349,17 @@ export default function AdminPortalPage() {
       const data = await res.json();
       if (data.success && data.book) {
         setAllBooks((prev) => [data.book, ...prev]);
-        showToast(`Volume "${data.book.title}" inscribed with Unique ID [${data.book.uniqueId}]!`);
+        showToast(`Volume "${data.book.title}" inscribed with Unique ID [${data.book.uniqueId}]!`, 'success');
         setNewTitle('');
         setNewAuthor('');
         setNewDescription('');
         setNewCustomUniqueId('');
         setAdminTab('allowed-books');
       } else {
-        showToast('Error: ' + (data.error || 'Failed to add volume'));
+        showToast('Error: ' + (data.error || 'Failed to add volume'), 'error');
       }
     } catch (err) {
-      showToast('Database error adding book.');
+      showToast('Database error adding book.', 'error');
     }
   };
 
@@ -413,7 +425,7 @@ export default function AdminPortalPage() {
       showToast(`Processed request with Unique ID verification for ${request.userEmail}`);
     } catch (e) {
       console.error(e);
-      showToast('Error updating request status.');
+      showToast('Error updating request status.', 'error');
     }
   };
 
@@ -434,11 +446,45 @@ export default function AdminPortalPage() {
         </div>
       </div>
 
-      {/* Toast Notification */}
-      {statusNotification && (
-        <div className="fixed top-6 right-6 z-50 p-3.5 rounded-xl bg-indigo-600 text-white text-xs font-semibold shadow-2xl animate-in fade-in slide-in-from-top-2 border border-indigo-400 flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4" />
-          <span>{statusNotification}</span>
+      {/* Toast Notification Banner */}
+      {toastConfig && (
+        <div
+          role="alert"
+          className={`fixed top-6 right-6 z-50 p-4 rounded-2xl text-xs font-semibold shadow-2xl animate-in fade-in slide-in-from-top-3 flex items-center gap-3 border backdrop-blur-md transition-all max-w-md ${
+            toastConfig.type === 'error'
+              ? 'bg-rose-950/95 text-rose-100 border-rose-500/60 shadow-rose-950/60 ring-1 ring-rose-500/30'
+              : toastConfig.type === 'warning'
+              ? 'bg-amber-950/95 text-amber-100 border-amber-500/60 shadow-amber-950/60 ring-1 ring-amber-500/30'
+              : 'bg-indigo-950/95 text-indigo-100 border-indigo-400/60 shadow-indigo-950/60 ring-1 ring-indigo-500/30'
+          }`}
+        >
+          {toastConfig.type === 'error' ? (
+            <div className="w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0">
+              <AlertCircle className="w-4 h-4 text-rose-400" />
+            </div>
+          ) : toastConfig.type === 'warning' ? (
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-4 h-4 text-amber-400" />
+            </div>
+          ) : (
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            </div>
+          )}
+          <div className="flex-1">
+            <div className="font-bold uppercase tracking-wider text-[10px] opacity-75">
+              {toastConfig.type === 'error' ? 'Authentication / Security Error' : toastConfig.type === 'warning' ? 'Notice' : 'Success'}
+            </div>
+            <div className="leading-snug mt-0.5">{toastConfig.message}</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToastConfig(null)}
+            className="text-white/60 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+            aria-label="Close notification"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 
@@ -476,22 +522,28 @@ export default function AdminPortalPage() {
                 <label className="block text-xs font-medium text-gray-300 mb-1.5">
                   Admin Master Passkey
                 </label>
-                <div className="relative">
-                  <Key className="w-4 h-4 text-gray-500 absolute left-3 top-3 pointer-events-none" />
+                <div className="relative flex items-center">
+                  <Key className="w-4 h-4 text-gray-500 absolute left-3 pointer-events-none z-10" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={adminPassword}
                     onChange={(e) => setAdminPassword(e.target.value)}
                     placeholder="Enter passkey (hint: vault2026 or demo)"
-                    className="w-full pl-9 pr-10 py-2.5 rounded-xl glass-input text-xs"
+                    className="w-full pl-9 pr-12 py-2.5 rounded-xl glass-input text-xs"
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-white"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowPassword((prev) => !prev);
+                    }}
+                    onMouseDown={(e) => e.preventDefault()}
+                    className="absolute right-2 p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors z-20 cursor-pointer flex items-center justify-center focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+                    title={showPassword ? 'Hide passkey' : 'Show passkey'}
+                    aria-label={showPassword ? 'Hide passkey' : 'Show passkey'}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <EyeOff className="w-4 h-4 text-indigo-400" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
@@ -518,6 +570,7 @@ export default function AdminPortalPage() {
                     setAdminPassword('vault2026');
                     setIsAuthenticated(true);
                     setErrorMsg('');
+                    showToast('Admin session authorized with demo credentials.', 'success');
                   }}
                   className="w-full py-2 rounded-xl bg-white/5 hover:bg-white/10 text-indigo-300 text-xs font-semibold border border-indigo-500/30 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >

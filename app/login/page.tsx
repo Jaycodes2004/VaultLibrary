@@ -18,7 +18,9 @@ import {
   Sparkles,
   AlertCircle,
   HelpCircle,
-  Key
+  Key,
+  AlertTriangle,
+  X
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -43,11 +45,21 @@ export default function LoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState('');
 
+  // Dynamic Floating Toast Notifications
+  const [toastConfig, setToastConfig] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
+    setToastConfig({ message, type });
+    setTimeout(() => setToastConfig(null), 4500);
+  };
+
   // Submit Access Request (Transmitted to Administrator)
   const handleRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim() || !email.trim()) {
-      setErrorMsg('Full Name and Email are required.');
+      const msg = 'Full Name and Institutional Email are required.';
+      setErrorMsg(msg);
+      showToast(msg, 'warning');
       return;
     }
 
@@ -71,11 +83,16 @@ export default function LoginPage() {
       if (data.success) {
         setRequestRefId(data.request.id);
         setRequestSubmittedSuccess(true);
+        showToast('Access request submitted! Awaiting administrator approval.', 'success');
       } else {
-        setErrorMsg(data.error || 'Failed to submit request.');
+        const err = data.error || 'Failed to submit request.';
+        setErrorMsg(err);
+        showToast(err, 'error');
       }
-    } catch (err: any) {
-      setErrorMsg('Network error communicating with library server.');
+    } catch (e: any) {
+      const netErr = 'Network error communicating with library server.';
+      setErrorMsg(netErr);
+      showToast(netErr, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -85,7 +102,9 @@ export default function LoginPage() {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginEmail.trim()) {
-      setLoginError('Please enter your approved email address.');
+      const msg = 'Please enter your approved scholar email address.';
+      setLoginError(msg);
+      showToast(msg, 'warning');
       return;
     }
 
@@ -107,19 +126,67 @@ export default function LoginPage() {
         document.cookie = `readvault_user_name=${encodeURIComponent(data.user.name)}; path=/; max-age=2592000`;
         document.cookie = `readvault_user_email=${encodeURIComponent(data.user.email)}; path=/; max-age=2592000`;
         
-        router.push('/');
+        showToast(`Welcome back, ${data.user.name}! Access granted.`, 'success');
+        setTimeout(() => {
+          router.push('/');
+        }, 500);
       } else {
-        setLoginError(data.error || 'Authentication failed. Please submit an access request.');
+        const err = data.error || 'Access Denied: Email not registered in authorized scholars directory.';
+        setLoginError(err);
+        showToast(err, 'error');
       }
-    } catch (err) {
-      setLoginError('Error connecting to authentication authority.');
+    } catch (e) {
+      const authErr = 'Error connecting to authentication authority.';
+      setLoginError(authErr);
+      showToast(authErr, 'error');
     } finally {
       setIsLoggingIn(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-white flex flex-col justify-between p-4 sm:p-8 font-sans selection:bg-[#8c6742] selection:text-white">
+    <div className="min-h-screen bg-[#070b14] text-white flex flex-col justify-between p-4 sm:p-8 font-sans selection:bg-[#8c6742] selection:text-white relative">
+      {/* Floating Dynamic Toast Notification */}
+      {toastConfig && (
+        <div
+          role="alert"
+          className={`fixed top-6 right-6 z-50 p-4 rounded-2xl text-xs font-semibold shadow-2xl animate-in fade-in slide-in-from-top-3 flex items-center gap-3 border backdrop-blur-md transition-all max-w-md ${
+            toastConfig.type === 'error'
+              ? 'bg-rose-950/95 text-rose-100 border-rose-500/60 shadow-rose-950/60 ring-1 ring-rose-500/30'
+              : toastConfig.type === 'warning'
+              ? 'bg-amber-950/95 text-amber-100 border-amber-500/60 shadow-amber-950/60 ring-1 ring-amber-500/30'
+              : 'bg-emerald-950/95 text-emerald-100 border-emerald-500/60 shadow-emerald-950/60 ring-1 ring-emerald-500/30'
+          }`}
+        >
+          {toastConfig.type === 'error' ? (
+            <div className="w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0">
+              <AlertCircle className="w-4 h-4 text-rose-400" />
+            </div>
+          ) : toastConfig.type === 'warning' ? (
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-4 h-4 text-amber-400" />
+            </div>
+          ) : (
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            </div>
+          )}
+          <div className="flex-1">
+            <div className="font-bold uppercase tracking-wider text-[10px] opacity-75">
+              {toastConfig.type === 'error' ? 'Authentication Error' : toastConfig.type === 'warning' ? 'Validation Notice' : 'Success'}
+            </div>
+            <div className="leading-snug mt-0.5">{toastConfig.message}</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToastConfig(null)}
+            className="text-white/60 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+            aria-label="Close notification"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
       {/* Top Header */}
       <div className="max-w-4xl mx-auto w-full flex items-center justify-between py-3">
         <Link
