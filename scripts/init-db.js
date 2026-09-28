@@ -217,9 +217,6 @@ async function initializeDatabase() {
   if (parseInt(userCount.rows[0].count, 10) === 0) {
     console.log('Seeding initial library users...');
     const initialUsers = [
-      { id: 'usr_alice', name: 'Dr. Alice Thorne', email: 'alice.thorne@readvault.internal', access_tier: 'scholar' },
-      { id: 'usr_bob', name: 'Bob Vance', email: 'bob.vance@readvault.internal', access_tier: 'standard' },
-      { id: 'usr_clara', name: 'Clara Oswald', email: 'clara.oswald@readvault.internal', access_tier: 'visiting' },
       { id: 'usr_admin', name: 'ReadVault Chief Administrator', email: 'admin@readvault.internal', access_tier: 'admin' },
     ];
     for (const u of initialUsers) {

@@ -137,32 +137,6 @@ export const LibraryGateway: React.FC<LibraryGatewayProps> = ({
     }
   };
 
-  const handleDemoLogin = (emailAddress: string) => {
-    setLoginEmail(emailAddress);
-    setIsLoggingIn(true);
-    fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: emailAddress }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success && data.user) {
-          setSessionCookie({
-            userId: data.user.userId,
-            name: data.user.name,
-            email: data.user.email,
-            role: 'scholar',
-          });
-          onLoginSuccess(data.user);
-        } else {
-          setLoginError(data.error || 'Demo login failed.');
-        }
-      })
-      .catch(() => setLoginError('Connection error during demo login.'))
-      .finally(() => setIsLoggingIn(false));
-  };
-
   return (
     <div className="w-full space-y-12">
       {/* Hero Archival Banner */}
@@ -434,32 +408,15 @@ export const LibraryGateway: React.FC<LibraryGatewayProps> = ({
               </button>
             </form>
 
-            {/* Quick Demo Scholar Logins */}
-            <div className="pt-4 border-t border-black/10 dark:border-white/10 space-y-2">
-              <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider block">
-                Pre-Approved Demo Scholars (Instant Catalog Access):
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => handleDemoLogin('alice.thorne@readvault.internal')}
-                  className="p-3 rounded-xl parchment-card hover:border-[#8c6742] text-left border border-black/10 dark:border-white/10 transition-all cursor-pointer group"
-                >
-                  <div className="font-semibold text-stone-900 dark:text-white text-xs group-hover:text-[#8c6742]">Dr. Alice Thorne</div>
-                  <div className="text-[10px] font-mono text-[#8c6742] dark:text-[#d4af37] truncate">alice.thorne@readvault.internal</div>
-                  <div className="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">Tier: Full Archive Access</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleDemoLogin('bob.vance@readvault.internal')}
-                  className="p-3 rounded-xl parchment-card hover:border-[#8c6742] text-left border border-black/10 dark:border-white/10 transition-all cursor-pointer group"
-                >
-                  <div className="font-semibold text-stone-900 dark:text-white text-xs group-hover:text-[#8c6742]">Bob Vance</div>
-                  <div className="text-[10px] font-mono text-[#8c6742] dark:text-[#d4af37] truncate">bob.vance@readvault.internal</div>
-                  <div className="text-[9px] text-indigo-600 dark:text-indigo-400 font-semibold mt-0.5">Tier: Core Curriculum</div>
-                </button>
+            {/* Security Note on Request-Only Policy */}
+            <div className="pt-4 border-t border-black/10 dark:border-white/10 text-xs text-stone-500 font-serif leading-relaxed">
+              <div className="flex items-center gap-1.5 text-stone-700 dark:text-stone-300 font-semibold mb-1">
+                <Shield className="w-3.5 h-3.5 text-[#8c6742]" />
+                <span>Strict Request-Only Policy</span>
               </div>
+              <p>
+                Only scholars whose access requests have been officially authorized by the Administrator in the Admin Console are granted sign-in privileges. If you do not yet have access, please submit an application using the <strong>Request Library Access</strong> tab above.
+              </p>
             </div>
           </div>
         )}

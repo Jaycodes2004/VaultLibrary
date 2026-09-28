@@ -118,26 +118,6 @@ export default function LoginPage() {
     }
   };
 
-  // Quick Demo Login helper
-  const handleDemoLogin = (demoEmail: string) => {
-    setLoginEmail(demoEmail);
-    fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: demoEmail }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success && data.user) {
-          localStorage.setItem('readvault_active_user', JSON.stringify(data.user));
-          document.cookie = `readvault_user_id=${data.user.userId}; path=/; max-age=2592000`;
-          document.cookie = `readvault_user_name=${encodeURIComponent(data.user.name)}; path=/; max-age=2592000`;
-          document.cookie = `readvault_user_email=${encodeURIComponent(data.user.email)}; path=/; max-age=2592000`;
-          router.push('/');
-        }
-      });
-  };
-
   return (
     <div className="min-h-screen bg-[#070b14] text-white flex flex-col justify-between p-4 sm:p-8 font-sans selection:bg-[#8c6742] selection:text-white">
       {/* Top Header */}
@@ -396,27 +376,15 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              {/* Pre-Approved Quick Test Section */}
-              <div className="pt-4 border-t border-white/10 space-y-2">
-                <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block">
-                  Demo Authorized Scholars (Instant Access):
-                </span>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <button
-                    onClick={() => handleDemoLogin('alice.thorne@readvault.internal')}
-                    className="flex-1 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-left border border-white/10 transition-colors cursor-pointer"
-                  >
-                    <div className="font-semibold text-white text-xs">Dr. Alice Thorne</div>
-                    <div className="text-[10px] font-mono text-indigo-300 truncate">alice.thorne@readvault.internal</div>
-                  </button>
-                  <button
-                    onClick={() => handleDemoLogin('bob.vance@readvault.internal')}
-                    className="flex-1 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-left border border-white/10 transition-colors cursor-pointer"
-                  >
-                    <div className="font-semibold text-white text-xs">Bob Vance</div>
-                    <div className="text-[10px] font-mono text-indigo-300 truncate">bob.vance@readvault.internal</div>
-                  </button>
+              {/* Security Policy Notice */}
+              <div className="pt-4 border-t border-white/10 text-xs text-stone-400 space-y-1">
+                <div className="flex items-center gap-1.5 text-stone-300 font-semibold">
+                  <Shield className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Strict Request-Only Policy</span>
                 </div>
+                <p className="text-[11px] leading-relaxed">
+                  Only scholars who have submitted an Access Request and received official approval from the Administrator are authorized to sign in. If you have not yet been approved, please submit an application using the Request Library Access tab.
+                </p>
               </div>
             </div>
           )}
